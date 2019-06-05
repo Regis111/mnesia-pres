@@ -1,21 +1,17 @@
 -module(labs).
 
 -export([
-         init/1, delete/1, add_lab/2, add_student/3, 
-         remove_student/1, remove_lab/1, add_point_to_student/2
+         init/1, delete/0, add_lab/2, add_student/3, remove_student/1, 
+         remove_lab/1, add_point_to_student/2, select_students/1
         ]).
 
 -record(laboratories, {date, teacher}).
 -record(students, {surname, firstname, lab_date, points = []}).
 
-delete(Nodes) -> mnesia:delete_table(laboratories),
-                 mnesia:delete_table(students),
-                 mnesia:stop(),
-                 mnesia:delete_schema(Nodes).
+delete() -> mnesia:delete_table(laboratories),
+            mnesia:delete_table(students).
 
 init(Nodes) -> 
-    ok = mnesia:create_schema(Nodes),
-    rpc:multicall(Nodes, mnesia, start, []),  
     {atomic, ok} = mnesia:create_table(laboratories, 
                         [{attributes, record_info(fields, laboratories)},
                         {disc_copies, Nodes}]),
@@ -75,11 +71,17 @@ add_point_to_student(Value, Surname) ->
     {atomic, Result} = mnesia:transaction(F),
     Result. 
 
+
 %TO DO
 %
 %select labs - CZAJKA ZA CO CI PŁACE!!!
 %
-%select students - CZAJKA ZA CO CI PŁACE!!!
+select_students(Surname) ->
+    F = fun() -> 
+                [Student] = mnesia:read(students, Surname),
+                Student
+        end,
+    mnesia:transaction(F).
 %
 %add observer node
 %
