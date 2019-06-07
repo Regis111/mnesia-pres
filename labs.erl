@@ -5,6 +5,7 @@
 -export([add_lab/2, add_student/3, add_point_to_student/2]).
 -export([select_lab_with_date/1, select_student_with_surname/1, 
          select_all_students/0, select_all_labs/0]).
+-export([spawn_db/0]).
 
 -record(laboratories, {date, teacher}).
 -record(students, {surname, firstname, lab_date, points = []}).
@@ -106,9 +107,15 @@ select_all_labs() ->
         end,
     mnesia:transaction(F).
 
-add_node(Node) -> mnesia:change_config(extra_db_nodes, [Node]),
-                  mnesia:change_table_copy_type(schema, Node, disc_copies),
-                  [{Tb, mnesia:add_table_copy(Tb, node(), Type)} || {Tb, [{'a@node', Type}]} 
-                    <- [{T, mnesia:table_info(T, where_to_commit)} || T <- mnesia:system_info(tables)]].
-
-%%TO DO
+spawn_db() -> labs:add_lab({czwartek,{9,35}},   'dr.Turek'),
+              labs:add_lab({sroda   ,{12,50}},  'dr.Turek'),
+              labs:add_lab({wtorek  ,{11,15}},  'dr.Turek'),
+              labs:add_lab({piatek  ,{9,35}},   'dr.Turek'),
+              labs:add_student('Jerzy', 'Wenta',    {czwartek,{9,35}}),
+              labs:add_student('Jan',   'Kowalski', {wtorek ,{11,15}}),
+              labs:add_student('Jakub', 'Czajka',   {czwartek,{9,35}}),
+              labs:add_student('Jerzy', 'Urban', {sroda,{12,50}}),
+              labs:add_student('Michal', 'Karmowski', {sroda,{12,50}}),
+              labs:add_student('Tadeusz', 'Dyduch', {sroda,{12,50}}),
+              labs:add_student('Miroslaw', 'Zelent', {piatek, {9,35}}),
+              labs:add_student('Steve', 'Balmer', {piatek, {9,35}}).
